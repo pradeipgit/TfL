@@ -1,4 +1,7 @@
-﻿using System;
+﻿using NUnit.Framework;
+using RestSharp;
+using System;
+using System.Net;
 using TechTalk.SpecFlow;
 
 namespace TfLAPITest.StepDefinitions
@@ -6,88 +9,99 @@ namespace TfLAPITest.StepDefinitions
     [Binding]
     public class ReqResSteps
     {
-        [Given(@"I have an end point for POST user request")]
-        public void GivenIHaveAnEndPointForPOSTUserRequest()
+        ListOfUsersDTO listOfUsersDTO;
+        UpdateUserDTO updateUserDTO;
+        GetUserDTO getUserDTO;
+        CreateUserDTO createUserDTO;
+
+        IRestResponse restResponse;
+
+        [Given(@"I made a request to create a user")]
+        public void GivenIMadeARequestToCreateAUser()
         {
-            ScenarioContext.Current.Pending();
+            String payloadCreateUser = @"{
+                                    ""name"": ""morpheus"",
+                                    ""job"": ""leader""
+                                }";
+
+            createUserDTO = DTOHelper.createUser(payloadCreateUser);
         }
         
-        [Given(@"I have an end point for GET user request")]
-        public void GivenIHaveAnEndPointForGETUserRequest()
+        [Given(@"I made a request to get an user with user id ""(.*)""")]
+        public void GivenIMadeARequestToGetAnUserWithUserId(int userId)
         {
-            ScenarioContext.Current.Pending();
+            var dtoHelper = new TfLAPITest.DTOHelper();
+            getUserDTO = dtoHelper.GetUser("/api/users/"+userId);
+        }
+
+        [Given(@"I made a request to get an user with invlid user id ""(.*)""")]
+        public void GivenIMadeARequestToGetAnUserWithInvlidUserId(int userId)
+        {
+            var dtoHelper = new TfLAPITest.DTOHelper();
+            restResponse = dtoHelper.GetInvildUser("/api/users/" + userId);
+        }
+
+
+        [Given(@"I made a request to get all users list")]
+        public void GivenIMadeARequestToGetAllUsersList()
+        {
+            var dtoHelper = new TfLAPITest.DTOHelper();
+            listOfUsersDTO = dtoHelper.GetUsers("/api/users/");
         }
         
-        [Given(@"I have an end point for GET list of users")]
-        public void GivenIHaveAnEndPointForGETListOfUsers()
+        [Given(@"I made a request to update the user")]
+        public void GivenIMadeARequestToUpdateTheUser()
         {
-            ScenarioContext.Current.Pending();
+            String payloadCreateUser = @"{
+                                    ""name"": ""pradeep"",
+                                    ""job"": ""leader""
+                                }";
+            String payloadUpdate = @"{
+                                    ""name"": ""name.updated"",
+                                    ""job"": ""job.updated""
+                                }";
+            var dtoHelper = new TfLAPITest.DTOHelper();
+            createUserDTO = DTOHelper.createUser(payloadCreateUser);
+            updateUserDTO = dtoHelper.UpdateUser("/api/users/" + createUserDTO.Id, payloadUpdate);
         }
         
-        [Given(@"I have an end point for PUT request")]
-        public void GivenIHaveAnEndPointForPUTRequest()
-        {
-            ScenarioContext.Current.Pending();
-        }
-        
-        [When(@"I made a request to create a user with name ""(.*)"" and job ""(.*)""")]
-        public void WhenIMadeARequestToCreateAUserWithNameAndJob(string p0, string p1)
-        {
-            ScenarioContext.Current.Pending();
-        }
-        
-        [When(@"I made a request to get an user with user id ""(.*)""")]
-        public void WhenIMadeARequestToGetAnUserWithUserId(int p0)
-        {
-            ScenarioContext.Current.Pending();
-        }
-        
-        [When(@"I made a request to get all users list")]
-        public void WhenIMadeARequestToGetAllUsersList()
-        {
-            ScenarioContext.Current.Pending();
-        }
-        
-        [When(@"I made a request to update the user name to ""(.*)"" for user id ""(.*)""")]
-        public void WhenIMadeARequestToUpdateTheUserNameToForUserId(string p0, int p1)
-        {
-            ScenarioContext.Current.Pending();
-        }
-        
-        [Then(@"the response should be successful")]
-        public void ThenTheResponseShouldBeSuccessful()
-        {
-            ScenarioContext.Current.Pending();
-        }
-        
+      
         [Then(@"the new user should be created")]
         public void ThenTheNewUserShouldBeCreated()
         {
-            ScenarioContext.Current.Pending();
+            Assert.NotNull(createUserDTO.Id);
+            Assert.AreEqual("morpheus", createUserDTO.Name);
+            Assert.AreEqual("leader", createUserDTO.Job);
         }
         
         [Then(@"the response should return all the user details")]
         public void ThenTheResponseShouldReturnAllTheUserDetails()
         {
-            ScenarioContext.Current.Pending();
+            Assert.AreEqual(2, getUserDTO.Data.Id);
+            Assert.AreEqual("Janet", getUserDTO.Data.FirstName);
+            Assert.AreEqual("janet.weaver@reqres.in", getUserDTO.Data.Email);
+            Assert.AreEqual("StatusCode Weekly", getUserDTO.Ad.Company);
         }
         
         [Then(@"the response should return all the available users")]
         public void ThenTheResponseShouldReturnAllTheAvailableUsers()
         {
-            ScenarioContext.Current.Pending();
+            Assert.AreEqual(1, listOfUsersDTO.Page);
+            Assert.AreEqual(2, listOfUsersDTO.TotalPages);
+            Assert.AreEqual(12, listOfUsersDTO.Total);
         }
         
         [Then(@"the user name should be updated")]
         public void ThenTheUserNameShouldBeUpdated()
         {
-            ScenarioContext.Current.Pending();
+            Assert.AreEqual("name.updated", updateUserDTO.Name);
+            Assert.AreEqual("job.updated", updateUserDTO.Job);
         }
         
-        [Then(@"the response code should be ""(.*)""")]
-        public void ThenTheResponseCodeShouldBe(int p0)
+        [Then(@"the response code should be Not Found")]
+        public void ThenTheResponseCodeShouldBeNotFound()
         {
-            ScenarioContext.Current.Pending();
+            Assert.AreEqual(restResponse.StatusCode, HttpStatusCode.NotFound);
         }
     }
 }

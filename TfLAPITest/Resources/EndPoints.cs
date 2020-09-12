@@ -8,7 +8,7 @@ namespace TfLAPITest.Resources
 {
     class EndPoints
     {
-        public const string BASE_URL = "https://reqres.in/api/users/";
+        public const string API_URL = "https://reqres.in/api/users/";
 
     }
 }
